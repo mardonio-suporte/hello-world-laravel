@@ -30,7 +30,7 @@ RUN npm install
 RUN npm run build
 
 # Gerar chave da aplica‡Æo (necess rio para o primeiro deploy)
-RUN php artisan key:generate --no-interaction
+#RUN php artisan key:generate --no-interaction
 
 # Ajustar permissäes
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
