@@ -33,14 +33,17 @@ RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 RUN npm run build
 
-# Ajustar permissões
+# Ajustar permissões principais
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
-RUN chmod -R 775 /app/storage /app/bootstrap/cache
 
-# CORREÇÃO NGINX: Copiar Nginx Config para o arquivo principal
+# CORREÇÃO CRÍTICA FINAL: Garantir que o diretório de log do Nginx existe e é acessível
+RUN mkdir -p /var/log/nginx && \
+    chown -R www-data:www-data /var/log/nginx
+
+# Configurar Nginx
 COPY .docker/nginx.conf /etc/nginx/nginx.conf
 
-# CORREÇÃO PHP-FPM: Copiar config do PHP-FPM para corrigir erro de permissão
+# Configurar PHP-FPM
 COPY .docker/fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Configurar Supervisor para gerenciar Nginx e PHP-FPM
