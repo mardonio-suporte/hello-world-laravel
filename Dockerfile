@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-# Instalar dependências do sistema (Adicionado sqlite-dev para a correção do DB)
+# Instalar dependências do sistema
 RUN apk add --no-cache \
     nginx \
     git \
@@ -13,7 +13,7 @@ RUN apk add --no-cache \
     npm \
     sqlite-dev
 
-# Instalar extensões PHP (pdo_sqlite adicionado)
+# Instalar extensões PHP
 RUN docker-php-ext-install pdo_mysql pdo_sqlite opcache
 
 # Configurar diretório de trabalho
@@ -22,7 +22,7 @@ WORKDIR /app
 # Copiar arquivos do projeto para o container
 COPY . /app
 
-# CORREÇÃO CRÍTICA: Cria um arquivo .env simples para que comandos Artisan/NPM funcionem no Build
+# CRÍTICO: Cria um arquivo .env simples para que comandos Artisan/NPM funcionem no Build
 RUN cp .env.example .env
 
 # Instalar Composer
@@ -33,8 +33,7 @@ RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 RUN npm run build
 
-# Gerar chave da aplicação (MANTIDO COMENTADO - a chave já está no Render)
-#RUN php artisan key:generate --no-interaction
+# A linha "key:generate" FOI REMOVIDA COMPLETAMENTE daqui para evitar a falha.
 
 # Ajustar permissões
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
