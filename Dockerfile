@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-# Instalar dependˆncias do sistema
+# Instalar dependências do sistema (Adicionado sqlite-dev para a correção do DB)
 RUN apk add --no-cache \
     nginx \
     git \
@@ -10,29 +10,33 @@ RUN apk add --no-cache \
     mysql-client \
     bash \
     nodejs \
-    npm
+    npm \
+    sqlite-dev
 
-# Instalar extensäes PHP
-RUN docker-php-ext-install pdo_mysql opcache
+# Instalar extensões PHP (pdo_sqlite adicionado)
+RUN docker-php-ext-install pdo_mysql pdo_sqlite opcache
 
-# Configurar diret¢rio de trabalho
+# Configurar diretório de trabalho
 WORKDIR /app
 
 # Copiar arquivos do projeto para o container
 COPY . /app
 
+# CORREÇÃO CRÍTICA: Cria um arquivo .env simples para que comandos Artisan/NPM funcionem no Build
+RUN cp .env.example .env
+
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalar dependˆncias do Composer e do NPM
+# Instalar dependências do Composer e do NPM
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 RUN npm run build
 
-# Gerar chave da aplica‡Æo (necess rio para o primeiro deploy)
+# Gerar chave da aplicação (MANTIDO COMENTADO - a chave já está no Render)
 #RUN php artisan key:generate --no-interaction
 
-# Ajustar permissäes
+# Ajustar permissões
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 RUN chmod -R 775 /app/storage /app/bootstrap/cache
 
@@ -42,7 +46,7 @@ COPY .docker/nginx.conf /etc/nginx/conf.d/default.conf
 # Configurar Supervisor para gerenciar Nginx e PHP-FPM
 COPY .docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expor a porta 80 (padrÆo do Nginx)
+# Expor a porta 80 (padrão do Nginx)
 EXPOSE 80
 
 # Iniciar Supervisor
